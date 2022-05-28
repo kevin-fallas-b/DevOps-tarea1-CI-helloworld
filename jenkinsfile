@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build') { 
+            steps {
+                sh 'mvn clean install' 
+            }
+        }
+        stage('Test') { 
+            steps {
+                //si tuvieramos unit tests los correría aqui. 
+            }
+        }
+        stage('verify') { 
+            steps {
+                //verificar si la app corre. Si esto falla nos va a reventar y caer en el 
+                //post/failure y notificar por corre
+                 sh 'java -jar .\target\helloworld-1.1.jar'
+            }
+        }
+        stage('deploy') { 
+            steps {
+                //Aqui podriamos deploy el app a una instancia local en tomcat o subir a AWS/Azure
+            }
+        }
+    }
+     post {
+        always {
+            //Generar reporte de lo hecho
+            echo "JAVA HOME:  ${env.JAVA_HOME}"
+            echo "BUILD ID:  ${env.BUILD_ID}"
+            echo "BUILD RESULT: ${currentBuild.result}"
+        }
+        failure {
+            mail to: criticalSystemDown@miEmpresa.com, subject: 'Fallo en pipeline ${env.JENKINS_URL}'
+        }
+    }
+}
